@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Analysis API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .data-summary {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .data-summary h2 {
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .data-summary ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .data-summary li {
+            margin-bottom: 5px;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Data Analysis API</h1>
+        <form action="/load_data" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".csv">
+            <button type="submit">Upload CSV</button>
+        </form>
+
+        <div id="dataSummary" class="data-summary" style="display: none;">
+            <h2>Data Summary</h2>
+            <ul>
+                <li><strong>Number of Columns:</strong> <span id="numColumns"></span></li>
+                <li><strong>Number of Rows:</strong> <span id="numRows"></span></li>
+                <li><strong>Columns:</strong></li>
+                <ul id="columnsList"></ul>
+            </ul>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch('/load_data', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('numColumns').textContent = data.num_columns;
+                    document.getElementById('numRows').textContent = data.num_rows;
+                    const columnsList = document.getElementById('columnsList');
+                    columnsList.innerHTML = '';
+                    data.columns.forEach(column => {
+                        const li = document.createElement('li');
+                        li.textContent = column;
+                        columnsList.appendChild(li);
+                    });
+                    document.getElementById('dataSummary').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'none';
+                } else {
+                    document.getElementById('errorMessage').textContent = data.message;
+                    document.getElementById('errorMessage').style.display = 'block';
+                    document.getElementById('dataSummary').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+
+</html>
